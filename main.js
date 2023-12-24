@@ -72,7 +72,12 @@ function updateGameOnServer() {
 
 // Function to join the game
 function joinGame() {
-  playerName = prompt('Enter your name:');
+  playerName = document.getElementById('name-input').value;
+  if (!playerName) {
+    alert('Please enter your name.');
+    return;
+  }
+
   const data = new FormData();
   data.append('playerName', playerName);
   data.append('action', 'join');
@@ -90,7 +95,12 @@ function joinGame() {
 
 // Function to create a game
 function createGame() {
-  playerName = prompt('Enter your name:');
+  playerName = document.getElementById('name-input').value;
+  if (!playerName) {
+    alert('Please enter your name.');
+    return;
+  }
+
   const data = new FormData();
   data.append('playerName', playerName);
   data.append('action', 'create');
