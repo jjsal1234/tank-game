@@ -1,6 +1,8 @@
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 let playerName;
+let gameCode;
+let playerSpeed = 5;
 
 // Game state
 const gameState = {
@@ -8,12 +10,65 @@ const gameState = {
   bullets: [],
 };
 
+// Event listeners for game options
+document.getElementById('create-game-btn').addEventListener('click', createGame);
+document.getElementById('join-game-btn').addEventListener('click', joinExistingGame);
+document.getElementById('join-game-confirm-btn').addEventListener('click', joinGameWithCode);
+
 // Event listener for shooting bullets (for demonstration purposes)
 document.addEventListener('keydown', (event) => {
   if (event.code === 'Space') {
     shootBullet();
   }
 });
+
+// Event listener for player movement
+document.addEventListener('keydown', (event) => {
+  handlePlayerMovement(event.code);
+});
+
+// Function to handle player movement
+function handlePlayerMovement(keyCode) {
+  const player = gameState.players[playerName];
+  if (!player) return;
+
+  switch (keyCode) {
+    case 'ArrowUp':
+      player.y -= playerSpeed;
+      break;
+    case 'ArrowDown':
+      player.y += playerSpeed;
+      break;
+    case 'ArrowLeft':
+      player.x -= playerSpeed;
+      break;
+    case 'ArrowRight':
+      player.x += playerSpeed;
+      break;
+  }
+
+  updateGameOnServer();
+}
+
+// Function to update the game state on the server
+function updateGameOnServer() {
+  const data = new FormData();
+  data.append('playerName', playerName);
+  data.append('action', 'update');
+  data.append('gameCode', gameCode);
+  data.append('playerX', gameState.players[playerName].x);
+  data.append('playerY', gameState.players[playerName].y);
+
+  fetch('https://jjsal1234.byethost7.com/server.php', {
+    method: 'POST',
+    body: data,
+  })
+    .then(response => response.json())
+    .then(updatedGameState => {
+      updateGame(updatedGameState);
+    })
+    .catch(error => console.error('Error:', error));
+}
 
 // Function to join the game
 function joinGame() {
@@ -46,6 +101,7 @@ function createGame() {
   })
     .then(response => response.json())
     .then(updatedGameState => {
+      gameCode = updatedGameState.gameCode;
       updateGame(updatedGameState);
     })
     .catch(error => console.error('Error:', error));
@@ -53,27 +109,16 @@ function createGame() {
 
 // Function to join an existing game
 function joinExistingGame() {
+  gameCode = prompt('Enter the game code:');
+  if (!gameCode) return;
+
   document.getElementById('game-options').style.display = 'none';
   document.getElementById('join-game-inputs').style.display = 'block';
 }
 
 // Function to join a game with a code
 function joinGameWithCode() {
-  const gameCode = document.getElementById('game-code-input').value;
-  const data = new FormData();
-  data.append('playerName', playerName);
-  data.append('action', 'join');
-  data.append('gameCode', gameCode);
-
-  fetch('https://jjsal1234.byethost7.com/server.php', {
-    method: 'POST',
-    body: data,
-  })
-    .then(response => response.json())
-    .then(updatedGameState => {
-      updateGame(updatedGameState);
-    })
-    .catch(error => console.error('Error:', error));
+  joinGame();
 }
 
 // Function to shoot a bullet
@@ -103,7 +148,7 @@ function updateGame(updatedGameState) {
   // Clear the canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw players
+  // Draw players (tanks)
   for (const player in gameState.players) {
     const { x, y, health } = gameState.players[player];
     drawTank(x, y, health);
@@ -112,7 +157,7 @@ function updateGame(updatedGameState) {
   // Draw bullets
   gameState.bullets.forEach(bullet => {
     drawBullet(bullet.x, bullet.y);
-  }
+  });
 
   // Request next animation frame
   requestAnimationFrame(() => updateGame(gameState));
@@ -120,6 +165,7 @@ function updateGame(updatedGameState) {
 
 // Function to draw a tank
 function drawTank(x, y, health) {
+  // Draw tank body
   ctx.fillStyle = 'green';
   ctx.fillRect(x, y, 30, 30);
 
@@ -134,10 +180,8 @@ function drawBullet(x, y) {
   ctx.fillRect(x, y, 5, 5);
 }
 
-// Event listeners for game options
-document.getElementById('create-game-btn').addEventListener('click', createGame);
-document.getElementById('join-game-btn').addEventListener('click', joinExistingGame);
-document.getElementById('join-game-confirm-btn').addEventListener('click', joinGameWithCode);
-
 // Start the game by joining
 joinGame();
+
+// Start drawing the game
+drawGame();
