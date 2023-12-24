@@ -21,7 +21,7 @@ function joinGame() {
   data.append('playerName', playerName);
   data.append('action', 'join');
 
-  fetch('http://yourbyethostdomain.com/server.php', {
+  fetch('https://jjsal1234.byethost7.com/server.php', {
     method: 'POST',
     body: data,
   })
@@ -40,7 +40,7 @@ function shootBullet() {
   data.append('bulletX', gameState.players[playerName].x + 15);
   data.append('bulletY', gameState.players[playerName].y);
 
-  fetch('https://c00lsite.byethost7.com/server.php', {
+  fetch('https://jjsal1234.byethost7.com/server.php', {
     method: 'POST',
     body: data,
   })
