@@ -1,6 +1,6 @@
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
-const playerName = prompt('Enter your name:');
+let playerName;
 
 // Game state
 const gameState = {
@@ -17,9 +17,53 @@ document.addEventListener('keydown', (event) => {
 
 // Function to join the game
 function joinGame() {
+  playerName = prompt('Enter your name:');
   const data = new FormData();
   data.append('playerName', playerName);
   data.append('action', 'join');
+
+  fetch('https://jjsal1234.byethost7.com/server.php', {
+    method: 'POST',
+    body: data,
+  })
+    .then(response => response.json())
+    .then(updatedGameState => {
+      updateGame(updatedGameState);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Function to create a game
+function createGame() {
+  playerName = prompt('Enter your name:');
+  const data = new FormData();
+  data.append('playerName', playerName);
+  data.append('action', 'create');
+
+  fetch('https://jjsal1234.byethost7.com/server.php', {
+    method: 'POST',
+    body: data,
+  })
+    .then(response => response.json())
+    .then(updatedGameState => {
+      updateGame(updatedGameState);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Function to join an existing game
+function joinExistingGame() {
+  document.getElementById('game-options').style.display = 'none';
+  document.getElementById('join-game-inputs').style.display = 'block';
+}
+
+// Function to join a game with a code
+function joinGameWithCode() {
+  const gameCode = document.getElementById('game-code-input').value;
+  const data = new FormData();
+  data.append('playerName', playerName);
+  data.append('action', 'join');
+  data.append('gameCode', gameCode);
 
   fetch('https://jjsal1234.byethost7.com/server.php', {
     method: 'POST',
@@ -68,7 +112,7 @@ function updateGame(updatedGameState) {
   // Draw bullets
   gameState.bullets.forEach(bullet => {
     drawBullet(bullet.x, bullet.y);
-  });
+  }
 
   // Request next animation frame
   requestAnimationFrame(() => updateGame(gameState));
@@ -89,6 +133,11 @@ function drawBullet(x, y) {
   ctx.fillStyle = 'red';
   ctx.fillRect(x, y, 5, 5);
 }
+
+// Event listeners for game options
+document.getElementById('create-game-btn').addEventListener('click', createGame);
+document.getElementById('join-game-btn').addEventListener('click', joinExistingGame);
+document.getElementById('join-game-confirm-btn').addEventListener('click', joinGameWithCode);
 
 // Start the game by joining
 joinGame();
